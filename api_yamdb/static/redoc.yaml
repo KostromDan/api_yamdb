@@ -55,7 +55,7 @@ paths:
         Использовать имя 'me' в качестве `username` запрещено.
 
         Поля `email` и `username` должны быть уникальными.
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -79,8 +79,8 @@ paths:
                   username:
                     type: string
                 required:
-                - email
-                - username
+                  - email
+                  - username
           description: 'Удачное выполнение запроса'
         '400':
           content:
@@ -136,11 +136,11 @@ paths:
 
         Права доступа: **Доступно без токена**
       parameters:
-      - name: search
-        in: query
-        description: Поиск по названию категории
-        schema:
-          type: string
+        - name: search
+          in: query
+          description: Поиск по названию категории
+          schema:
+            type: string
       responses:
         200:
           description: Удачное выполнение запроса
@@ -194,8 +194,8 @@ paths:
         403:
           description: Нет прав доступа
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
   /categories/{slug}/:
     delete:
       tags:
@@ -206,12 +206,12 @@ paths:
 
         Права доступа: **Администратор.**
       parameters:
-      - name: slug
-        in: path
-        required: true
-        description: Slug категории
-        schema:
-          type: string
+        - name: slug
+          in: path
+          required: true
+          description: Slug категории
+          schema:
+            type: string
       responses:
         204:
           description: 'Удачное выполнение запроса'
@@ -222,8 +222,8 @@ paths:
         404:
           description: Категория не найдена
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
 
   /genres/:
     get:
@@ -235,11 +235,11 @@ paths:
 
         Права доступа: **Доступно без токена**
       parameters:
-      - name: search
-        in: query
-        description: Поиск по названию жанра
-        schema:
-          type: string
+        - name: search
+          in: query
+          description: Поиск по названию жанра
+          schema:
+            type: string
       responses:
         200:
           description: Удачное выполнение запроса
@@ -288,8 +288,8 @@ paths:
         403:
           description: Нет прав доступа
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
 
   /genres/{slug}/:
     delete:
@@ -301,12 +301,12 @@ paths:
 
         Права доступа: **Администратор**.
       parameters:
-      - name: slug
-        in: path
-        required: true
-        description: Slug жанра
-        schema:
-          type: string
+        - name: slug
+          in: path
+          required: true
+          description: Slug жанра
+          schema:
+            type: string
       responses:
         204:
           description: 'Удачное выполнение запроса'
@@ -317,8 +317,8 @@ paths:
         404:
           description: Жанр не найден
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
 
   /titles/:
     get:
@@ -382,7 +382,7 @@ paths:
         Нельзя добавлять произведения, которые еще не вышли (год выпуска не может быть больше текущего).
 
         При добавлении нового произведения требуется указать уже существующие категорию и жанр.
-      parameters: []
+      parameters: [ ]
       requestBody:
         content:
           application/json:
@@ -406,8 +406,8 @@ paths:
         403:
           description: Нет прав доступа
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
   /titles/{titles_id}/:
     parameters:
       - name: titles_id
@@ -462,8 +462,8 @@ paths:
         404:
           description: Объект не найден
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
     delete:
       tags:
         - TITLES
@@ -482,8 +482,8 @@ paths:
         404:
           description: Произведение не найдено
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
 
   /titles/{title_id}/reviews/:
     parameters:
@@ -554,8 +554,8 @@ paths:
         404:
           description: Произведение не найдено
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
   /titles/{title_id}/reviews/{review_id}/:
     parameters:
       - name: title_id
@@ -620,8 +620,8 @@ paths:
         404:
           description: Произведение не найдено
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
     delete:
       tags:
         - REVIEWS
@@ -640,8 +640,8 @@ paths:
         404:
           description: Произведение или отзыв не найдены
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
 
   /titles/{title_id}/reviews/{review_id}/comments/:
     parameters:
@@ -718,8 +718,8 @@ paths:
         404:
           description: Не найдено произведение или отзыв
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
 
   /titles/{title_id}/reviews/{review_id}/comments/{comment_id}/:
     parameters:
@@ -791,8 +791,8 @@ paths:
         404:
           description: Не найдено произведение, отзыв или комментарий
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
     delete:
       tags:
         - COMMENTS
@@ -811,8 +811,8 @@ paths:
         404:
           description: Не найдено произведение, отзыв или комментарий
       security:
-      - jwt-token:
-        - write:user,moderator,admin
+        - jwt-token:
+            - write:user,moderator,admin
 
   /users/:
     get:
@@ -824,11 +824,11 @@ paths:
 
         Права доступа: **Администратор**
       parameters:
-      - name: search
-        in: query
-        description: Поиск по имени пользователя (username)
-        schema:
-          type: string
+        - name: search
+          in: query
+          description: Поиск по имени пользователя (username)
+          schema:
+            type: string
       responses:
         200:
           description: Удачное выполнение запроса
@@ -852,8 +852,8 @@ paths:
         401:
           description: Необходим JWT-токен
       security:
-      - jwt-token:
-        - read:admin
+        - jwt-token:
+            - read:admin
     post:
       tags:
         - USERS
@@ -887,8 +887,8 @@ paths:
         403:
           description: Нет прав доступа
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
   /users/{username}/:
     parameters:
       - name: username
@@ -919,8 +919,8 @@ paths:
         404:
           description: Пользователь не найден
       security:
-      - jwt-token:
-        - read:admin
+        - jwt-token:
+            - read:admin
     patch:
       tags:
         - USERS
@@ -956,8 +956,8 @@ paths:
         404:
           description: Пользователь не найден
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
     delete:
       tags:
         - USERS
@@ -976,8 +976,8 @@ paths:
         404:
           description: Пользователь не найден
       security:
-      - jwt-token:
-        - write:admin
+        - jwt-token:
+            - write:admin
 
   /users/me/:
     get:
@@ -996,8 +996,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
       security:
-      - jwt-token:
-        - read:admin,moderator,user
+        - jwt-token:
+            - read:admin,moderator,user
     patch:
       tags:
         - USERS
@@ -1027,8 +1027,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
       security:
-      - jwt-token:
-        - write:admin,moderator,user
+        - jwt-token:
+            - write:admin,moderator,user
 
 components:
   schemas:
@@ -1038,8 +1038,8 @@ components:
       type: object
       description: Детальная информация о пользователе
       required:
-          - username
-          - email
+        - username
+        - email
       properties:
         username:
           type: string
@@ -1135,16 +1135,16 @@ components:
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
       required:
-      - name
-      - slug
+        - name
+        - slug
 
     Review:
       title: Отзыв
       type: object
       description: Детальная информация отзыва
       required:
-          - text
-          - score
+        - text
+        - score
       properties:
         id:
           type: integer
@@ -1220,9 +1220,9 @@ components:
           maxLength: 150
         role:
           enum:
-          - admin
-          - moderator
-          - user
+            - admin
+            - moderator
+            - user
           type: string
           readOnly: true
         email:
@@ -1238,8 +1238,8 @@ components:
         bio:
           type: string
       required:
-      - username
-      - email
+        - username
+        - email
 
     Category:
       type: object
@@ -1252,8 +1252,8 @@ components:
           maxLength: 50
           pattern: ^[-a-zA-Z0-9_]+$
       required:
-      - name
-      - slug
+        - name
+        - slug
 
   securitySchemes:
     jwt-token:

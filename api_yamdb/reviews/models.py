@@ -2,7 +2,8 @@ from datetime import date
 
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import CheckConstraint, Q
+from django.contrib.auth.models import AbstractUser
+from django.db.models import CharField, TextField, CheckConstraint, Q
 
 slug_regex_validator = RegexValidator(
     regex=r'^[-a-zA-Z0-9_]+$',
@@ -10,6 +11,28 @@ slug_regex_validator = RegexValidator(
 )
 
 
+class User(AbstractUser):
+    USER = 'USR'
+    MODERATOR = 'MOD'
+    ADMIN = 'ADM'
+    ROLE_CHOICES = [
+        (USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMIN, 'admin'),
+    ]
+    role = CharField(
+        verbose_name='Роль',
+        max_length=3,
+        choices=ROLE_CHOICES,
+        default=USER,
+    )
+    bio = TextField(
+        verbose_name='Биография',
+        blank=True,
+    )
+    confirmation_code = TextField(blank=True)
+
+    
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
@@ -60,3 +83,4 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
