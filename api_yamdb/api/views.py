@@ -5,13 +5,14 @@ from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .permissions import IsAdmin
-from .serializers import RegistrationSerializer, UserSerializer
+from .serializers import RegistrationSerializer, UserSerializer, GenreSerializer, CategorySerializer, TitleSerializer
+from reviews.models import Category, Genre, Title
 
 User = get_user_model()
 
@@ -47,6 +48,27 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.kwargs.get('pk') != 'me':
             permission_classes.append(IsAdmin)
         return [permission() for permission in permission_classes]
+
+
+class GenreViewset(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete']
+#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
+
+
+class CategoryViewset(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = CategorySerializer
+    pagination_class = LimitOffsetPagination
+    http_method_names = ['get', 'post', 'delete']
+#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
+
+
+#class TitleViewset(viewsets.ModelViewSet):
+
+#  permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
 
 
 @permission_classes([AllowAny, ])

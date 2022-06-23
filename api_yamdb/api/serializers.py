@@ -7,6 +7,8 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import EmailField
 
+from reviews.models import Category, Genre, Title
+
 User = get_user_model()
 
 
@@ -59,3 +61,26 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise ValidationError(
                 'Пользователь с данной почтой уже существует!')
         return value
+
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = ('name', 'slug')
+
+
+class CategorySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Category
+        fields = ('name', 'slug')
+
+
+class TitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(read_only=True, many=True)
+    category = CategorySerializer(read_only=True)
+
+    class Meta:
+        model = Title
+        fields = ('name', 'year', 'description', 'genre', 'category')
