@@ -14,7 +14,8 @@ class User(AbstractUser):
     role = CharField(
         verbose_name='Роль',
         max_length=10,
-        blank=False
+        blank=False,
+        default='user'
     )
     bio = TextField(
         verbose_name='Биография',
