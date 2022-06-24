@@ -1,9 +1,7 @@
-from datetime import date
-
+from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.db.models import CharField, TextField, CheckConstraint, Q
+from django.db.models import CharField, TextField
 
 slug_regex_validator = RegexValidator(
     regex=r'^[-a-zA-Z0-9_]+$',
@@ -12,9 +10,9 @@ slug_regex_validator = RegexValidator(
 
 
 class User(AbstractUser):
-    USER = 'USR'
-    MODERATOR = 'MOD'
-    ADMIN = 'ADM'
+    USER = 'U'
+    MODERATOR = 'M'
+    ADMIN = 'A'
     ROLE_CHOICES = [
         (USER, 'user'),
         (MODERATOR, 'moderator'),
@@ -22,7 +20,7 @@ class User(AbstractUser):
     ]
     role = CharField(
         verbose_name='Роль',
-        max_length=3,
+        max_length=1,
         choices=ROLE_CHOICES,
         default=USER,
     )
@@ -32,7 +30,7 @@ class User(AbstractUser):
     )
     confirmation_code = TextField(blank=True)
 
-    
+
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
@@ -62,12 +60,13 @@ class Title(models.Model):
 
     class Meta:
         # think about unique constraint ['genre','name']
-        constraints = (
-            CheckConstraint(
-                check=(Q(year__lte=date.today().year)),
-                name='%(app_label)s_%(class)s_year__less__today'
-            )
-        )
+        # constraints = (
+        #     CheckConstraint(
+        #         check=(Q(year__lte=date.today().year)),
+        #         name='%(app_label)s_%(class)s_year__less__today'
+        #     )
+        # )
+        pass
 
     def __str__(self):
         return self.name[:15]
@@ -83,4 +82,3 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
-
