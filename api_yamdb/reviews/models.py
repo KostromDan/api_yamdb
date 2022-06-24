@@ -11,19 +11,10 @@ slug_regex_validator = RegexValidator(
 
 
 class User(AbstractUser):
-    USER = 'U'
-    MODERATOR = 'M'
-    ADMIN = 'A'
-    ROLE_CHOICES = [
-        (USER, 'user'),
-        (MODERATOR, 'moderator'),
-        (ADMIN, 'admin'),
-    ]
     role = CharField(
         verbose_name='Роль',
-        max_length=1,
-        choices=ROLE_CHOICES,
-        default=USER,
+        max_length=10,
+        blank=False
     )
     bio = TextField(
         verbose_name='Биография',
