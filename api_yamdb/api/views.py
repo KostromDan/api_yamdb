@@ -99,7 +99,7 @@ def token(request):
         json_err['username'] = 'Имя пользователя не указано!'
     if confirmation_code is None:
         json_err[
-            'confirmation_code'] = 'Код подтверждения не указан не указан!'
+            'confirmation_code'] = 'Код подтверждения не указан!'
     if len(json_err) != 0:
         return Response(json_err, status=status.HTTP_400_BAD_REQUEST)
     try:

@@ -2,11 +2,10 @@ from random import randint
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from django.core.validators import validate_email
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import CharField, EmailField
+from rest_framework.fields import EmailField
 
 from reviews.models import Category, Genre, Title
 
@@ -15,7 +14,6 @@ User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     email = EmailField(required=True)
-    role = CharField(default='user')
 
     class Meta:
         model = User
@@ -28,14 +26,12 @@ class UserSerializer(serializers.ModelSerializer):
                   )
 
     def validate_role(self, value):
-        if value in ['', None]:
-            return 'user'
         if value not in ['user', 'admin', 'moderator']:
             raise ValidationError(f'Роль <{value}> некорректна.')
         return value
 
     def validate_username(self, value):
-        if value in ['me', '']:
+        if value == 'me':
             raise ValidationError(
                 f'Нельзя создать пользователя с именем <{value}>!')
         if User.objects.filter(username=value).exists():
@@ -44,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_email(self, value):
-        validate_email(value)
         if User.objects.filter(email=value).exists():
             raise ValidationError(
                 'Пользователь с данной почтой уже существует!')
