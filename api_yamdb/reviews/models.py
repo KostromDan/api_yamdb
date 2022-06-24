@@ -1,7 +1,7 @@
-from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.contrib.auth.models import AbstractUser, UserManager
+from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.db import models
-from django.db.models import CharField, TextField
+from django.db.models import CharField, TextField, constraints
 
 slug_regex_validator = RegexValidator(
     regex=r'^[-a-zA-Z0-9_]+$',
@@ -82,3 +82,70 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Review(models.Model):
+    title = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Произведение'
+    )
+    text = models.TextField(
+        verbose_name='Текст',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Автор'
+    )
+    score = models.IntegerField(
+        validators=[
+            MinValueValidator(1, 'Integer value from 1 to 10'),
+            MaxValueValidator(10, 'Integer value from 1 to 10')
+        ],
+        verbose_name='Оценка'
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique review'
+            )
+        ]
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+
+
+class Comment(models.Model):
+    text = models.TextField(
+        verbose_name='Текст',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
+    review = models.ForeignKey(
+        Review,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Отзыв'
+    )
+    pub_date = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата публикации'
+    )
+
+    class Meta:
+        ordering = ['-pub_date']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
