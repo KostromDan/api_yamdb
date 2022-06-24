@@ -2,10 +2,11 @@ from random import randint
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.core.validators import validate_email
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework.fields import EmailField
+from rest_framework.fields import CharField, EmailField
 
 from reviews.models import Category, Genre, Title
 
@@ -13,8 +14,8 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
-    role = serializers.SerializerMethodField()
-    email = EmailField(required=True, allow_blank=False, allow_null=False)
+    email = EmailField(required=True)
+    role = CharField(default='user')
 
     class Meta:
         model = User
@@ -27,15 +28,14 @@ class UserSerializer(serializers.ModelSerializer):
                   )
 
     def validate_role(self, value):
+        if value in ['', None]:
+            return 'user'
         if value not in ['user', 'admin', 'moderator']:
-            return ValidationError('Роль некорректна.')
+            raise ValidationError(f'Роль <{value}> некорректна.')
         return value
 
-    def get_role(self, obj):
-        return obj.get_role_display()
-
     def validate_username(self, value):
-        if value == 'me':
+        if value in ['me', '']:
             raise ValidationError(
                 f'Нельзя создать пользователя с именем <{value}>!')
         if User.objects.filter(username=value).exists():
@@ -44,17 +44,15 @@ class UserSerializer(serializers.ModelSerializer):
         return value
 
     def validate_email(self, value):
+        validate_email(value)
         if User.objects.filter(email=value).exists():
             raise ValidationError(
                 'Пользователь с данной почтой уже существует!')
         return value
 
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    email = EmailField(required=True, allow_blank=False, allow_null=False)
-
-    class Meta:
-        model = User
+class RegistrationSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
         fields = ('username',
                   'email',
                   )
@@ -69,20 +67,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
         print(confirmation_code)
         return user
 
-    def validate_username(self, value):
-        if value == 'me':
-            raise ValidationError(
-                f'Нельзя создать пользователя с именем <{value}>!')
-        if User.objects.filter(username=value).exists():
-            raise ValidationError(
-                'Пользователь с данным логином уже существует!')
-        return value
 
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise ValidationError(
-                'Пользователь с данной почтой уже существует!')
-        return value
+class UserMeSerializer(UserSerializer):
+    email = EmailField(required=False)
+
+    class Meta(UserSerializer.Meta):
+        read_only_fields = ('username',
+                            'email',
+                            'role',
+                            )
 
 
 class GenreSerializer(serializers.ModelSerializer):

@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -15,42 +13,21 @@ from reviews.models import Genre
 
 from .permissions import IsAdmin
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, UserSerializer
+                          RegistrationSerializer, UserMeSerializer,
+                          UserSerializer
                           )
 
 User = get_user_model()
 
 
+@permission_classes([IsAuthenticated, IsAdmin])
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
     lookup_field = 'username'
-
-    def get_queryset(self):
-        if self.kwargs.get('pk') == 'me':
-            return self.request.user.username
-        return User.objects.all()
-
-    def get_permissions(self):
-        json = {
-            'data': self.request.data,
-            'kwargs': self.kwargs,
-            'url': self.request.build_absolute_uri(),
-            'method': self.request.method,
-            'username': self.kwargs.get('pk'),
-            'request_user': {
-
-            }
-
-        }
-        print('\n')
-        pprint(json)
-        permission_classes = [IsAuthenticated]
-        if self.kwargs.get('pk') != 'me':
-            permission_classes.append(IsAdmin)
-        return [permission() for permission in permission_classes]
+    queryset = User.objects.all()
 
 
 class GenreViewset(viewsets.ModelViewSet):
@@ -78,8 +55,31 @@ class CategoryViewset(viewsets.ModelViewSet):
 #  permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
 
 
-@permission_classes([AllowAny, ])
+@api_view(['PATCH', 'GET'])
+@permission_classes([IsAuthenticated])
+def user_me_view(request):
+    user = request.user
+    if request.method == 'GET':
+        serializer = UserMeSerializer(instance=user, )
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    serializer = UserMeSerializer(data=request.data, instance=user)
+    if serializer.is_valid():
+        role = request.data.get('role')
+        if (role is not None
+                and 'user' == user.role != role):
+            json_error = {
+                'role': user.role
+            }
+            return Response(json_error, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.validated_data)
+    else:
+        print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['POST'])
+@permission_classes([AllowAny, ])
 def register(request):
     serializer = RegistrationSerializer(data=request.data, )
     if serializer.is_valid():
@@ -89,8 +89,8 @@ def register(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@permission_classes([AllowAny, ])
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def token(request):
     username = request.data.get('username')
     confirmation_code = request.data.get('confirmation_code')
