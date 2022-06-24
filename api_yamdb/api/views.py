@@ -1,18 +1,22 @@
+from pprint import pprint
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from reviews.models import Genre
+
 from .permissions import IsAdmin
-from .serializers import RegistrationSerializer, UserSerializer, GenreSerializer, CategorySerializer, TitleSerializer
-from reviews.models import Category, Genre, Title
+from .serializers import (CategorySerializer, GenreSerializer,
+                          RegistrationSerializer, UserSerializer
+                          )
 
 User = get_user_model()
 
@@ -22,28 +26,27 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
     search_fields = ('=username',)
+    lookup_field = 'username'
 
     def get_queryset(self):
-        username = self.kwargs.get('pk')
-        if username is None:
-            return User.objects.all()
-        if username == 'me':
-            return self.request.user
-        try:
-            user = User.objects.get(username=username)
-        except ObjectDoesNotExist:
-            raise ValidationError(f'Пользователя <{username}> не существует!')
-        return user
+        if self.kwargs.get('pk') == 'me':
+            return self.request.user.username
+        return User.objects.all()
 
     def get_permissions(self):
-        # json = {
-        #     'data': self.request.data,
-        #     'kwargs': self.kwargs,
-        #     'url': self.request.build_absolute_uri(),
-        #     'metod': self.request.method
-        # }
-        # print('\n')
-        # pprint(json)
+        json = {
+            'data': self.request.data,
+            'kwargs': self.kwargs,
+            'url': self.request.build_absolute_uri(),
+            'method': self.request.method,
+            'username': self.kwargs.get('pk'),
+            'request_user': {
+
+            }
+
+        }
+        print('\n')
+        pprint(json)
         permission_classes = [IsAuthenticated]
         if self.kwargs.get('pk') != 'me':
             permission_classes.append(IsAdmin)
@@ -55,6 +58,8 @@ class GenreViewset(viewsets.ModelViewSet):
     serializer_class = GenreSerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete']
+
+
 #    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
 
 
@@ -63,10 +68,12 @@ class CategoryViewset(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
     pagination_class = LimitOffsetPagination
     http_method_names = ['get', 'post', 'delete']
+
+
 #    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
 
 
-#class TitleViewset(viewsets.ModelViewSet):
+# class TitleViewset(viewsets.ModelViewSet):
 
 #  permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
 

@@ -13,6 +13,9 @@ User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
+    role = serializers.SerializerMethodField()
+    email = EmailField(required=True, allow_blank=False, allow_null=False)
+
     class Meta:
         model = User
         fields = ('username',
@@ -23,9 +26,28 @@ class UserSerializer(serializers.ModelSerializer):
                   'role',
                   )
 
-    def create(self, validated_data):
-        user = User.objects.create(**validated_data)
-        return user
+    def validate_role(self, value):
+        if value not in ['user', 'admin', 'moderator']:
+            return ValidationError('Роль некорректна.')
+        return value
+
+    def get_role(self, obj):
+        return obj.get_role_display()
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise ValidationError(
+                f'Нельзя создать пользователя с именем <{value}>!')
+        if User.objects.filter(username=value).exists():
+            raise ValidationError(
+                'Пользователь с данным логином уже существует!')
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise ValidationError(
+                'Пользователь с данной почтой уже существует!')
+        return value
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -64,14 +86,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
