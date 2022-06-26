@@ -1,15 +1,16 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Genre
+from reviews.models import Category, Genre
 
 from .permissions import IsAdmin
 from .serializers import (CategorySerializer, GenreSerializer,
@@ -30,25 +31,33 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
 
-class GenreViewset(viewsets.ModelViewSet):
+class CreateListDeleteViewset(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
+
+
+@permission_classes([IsAuthenticatedOrReadOnly, IsAdmin])
+class GenreViewset(CreateListDeleteViewset):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = LimitOffsetPagination
-    http_method_names = ['get', 'post', 'delete']
+    filter_backends = (filters.SearchFilter,)
+    lookup_field = 'slug'
+    search_fields = ('name',)
 
 
-#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
-
-
-class CategoryViewset(viewsets.ModelViewSet):
-    queryset = Genre.objects.all()
+@permission_classes([IsAuthenticatedOrReadOnly, IsAdmin])
+class CategoryViewset(CreateListDeleteViewset):
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = LimitOffsetPagination
-    http_method_names = ['get', 'post', 'delete']
-
-
-#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
-
+    filter_backends = (filters.SearchFilter,)
+    lookup_field = 'slug'
+    search_fields = ('name',)
 
 # class TitleViewset(viewsets.ModelViewSet):
 

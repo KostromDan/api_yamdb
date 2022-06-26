@@ -1,8 +1,8 @@
 from django.contrib import admin
 
-from .models import User
+from .models import User, Genre, Category
 
 
-@admin.register(User)
+@admin.register(User, Genre, Category)
 class PostAdmin(admin.ModelAdmin):
     pass
