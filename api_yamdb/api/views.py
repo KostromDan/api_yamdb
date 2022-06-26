@@ -1,19 +1,19 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 
-from rest_framework import filters, status, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import (AllowAny, IsAuthenticated)
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Genre
+from reviews.models import Category, Genre, Title
 
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, UserMeSerializer,
+                          RegistrationSerializer, TitleSerializer, UserMeSerializer,
                           UserSerializer
                           )
 
@@ -30,29 +30,40 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
 
-class GenreViewset(viewsets.ModelViewSet):
+class CreateListDeleteViewset(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
+
+
+class GenreViewset(CreateListDeleteViewset):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = LimitOffsetPagination
-    http_method_names = ['get', 'post', 'delete']
+    filter_backends = (filters.SearchFilter,)
+    permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
+    search_fields = ('name',)
 
 
-#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
-
-
-class CategoryViewset(viewsets.ModelViewSet):
-    queryset = Genre.objects.all()
+class CategoryViewset(CreateListDeleteViewset):
+    queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = LimitOffsetPagination
-    http_method_names = ['get', 'post', 'delete']
+    filter_backends = (filters.SearchFilter,)
+    permission_classes = [IsAdminOrReadOnly]
+    lookup_field = 'slug'
+    search_fields = ('name',)
 
 
-#    permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
-
-
-# class TitleViewset(viewsets.ModelViewSet):
-
-#  permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
+class TitleViewset(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['PATCH', 'GET'])
