@@ -14,7 +14,8 @@ from reviews.models import Category, Genre, Title
 
 from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, TitleSerializer, UserMeSerializer,
+                          RegistrationSerializer, TitleSerializer,
+                          UserMeSerializer,
                           UserSerializer
                           )
 
