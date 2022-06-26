@@ -5,16 +5,16 @@ from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly)
+    AllowAny, IsAuthenticated)
 from rest_framework.response import Response
 
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre
+from reviews.models import Category, Genre, Title
 
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, UserMeSerializer,
+                          RegistrationSerializer, TitleSerializer, UserMeSerializer,
                           UserSerializer
                           )
 
@@ -40,28 +40,31 @@ class CreateListDeleteViewset(
     pass
 
 
-@permission_classes([IsAuthenticatedOrReadOnly, IsAdmin])
 class GenreViewset(CreateListDeleteViewset):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
+    permission_classes = [IsAdminOrReadOnly]
     lookup_field = 'slug'
     search_fields = ('name',)
 
 
-@permission_classes([IsAuthenticatedOrReadOnly, IsAdmin])
 class CategoryViewset(CreateListDeleteViewset):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     pagination_class = LimitOffsetPagination
     filter_backends = (filters.SearchFilter,)
+    permission_classes = [IsAdminOrReadOnly]
     lookup_field = 'slug'
     search_fields = ('name',)
 
-# class TitleViewset(viewsets.ModelViewSet):
 
-#  permission_classes = [IsAuthenticatedOrReadOnly, IsAdmin]
+class TitleViewset(viewsets.ModelViewSet):
+    queryset = Title.objects.all()
+    serializer_class = TitleSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = [IsAdminOrReadOnly]
 
 
 @api_view(['PATCH', 'GET'])

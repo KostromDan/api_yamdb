@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import (
-    CharField, TextField, CheckConstraint, UniqueConstraint, Q)
+    CharField, TextField, CheckConstraint, Q)
 from datetime import date
 
 
@@ -37,7 +37,7 @@ class Title(models.Model):
     description = models.TextField(max_length=256)
     genre = models.ManyToManyField(
         'Genre',
-        related_name='assigned_genre')  # think about through_fields
+        related_name='assigned_genre')
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,
