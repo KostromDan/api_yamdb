@@ -88,14 +88,25 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True, many=True)
-    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(source='slug', many=True)
+    category = CategorySerializer(source='slug')
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = ('name', 'year', 'description', 'genre', 'category')
+        depth = 1
+        fields = ('name', 'year', 'description', 'genre', 'category', 'rating')
 
-#    def get_rating(self, obj):
-#
-#        return obj.
+    def validate_category(self, value):
+        if value not in Category.objects.all():
+            raise ValidationError('Укажите существующую категорию')
+
+    def validate_genre(self, value):
+        if value not in Genre.objects.all():
+            raise ValidationError('Укажите существующий жанр')
+
+    def get_rating(self, obj):
+        return 5
+
+    def create(self, validated_data):
+        return super().create(validated_data)
