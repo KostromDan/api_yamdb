@@ -20,7 +20,7 @@ from .serializers import (CategorySerializer, GenreSerializer,
 User = get_user_model()
 
 
-@permission_classes([IsAuthenticated, IsAdmin])
+@permission_classes([IsAdmin])
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     pagination_class = LimitOffsetPagination
