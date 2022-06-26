@@ -1,13 +1,10 @@
-from django.contrib.auth.models import AbstractUser
-from django.core.validators import (MaxValueValidator, MinValueValidator,
-                                    RegexValidator)
-from django.db import models
-from django.db.models import CharField, TextField
+from datetime import date
 
-slug_regex_validator = RegexValidator(
-    regex=r'^[-a-zA-Z0-9_]+$',
-    message='Must be letters or numbers only'
-)
+from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.db.models import (
+    CharField, CheckConstraint, Q, TextField)
 
 
 class User(AbstractUser):
@@ -28,8 +25,7 @@ class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
-        unique=True,
-        validators=[slug_regex_validator]
+        unique=True
     )
 
     def __str__(self):
@@ -38,11 +34,11 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.TextField()
-    year = models.IntegerField()  # maybe validator r'^[-+]?\d{1,4}$'
+    year = models.IntegerField()
     description = models.TextField(max_length=256)
     genre = models.ManyToManyField(
         'Genre',
-        related_name='assigned_genre')  # think about through_fields
+        related_name='assigned_genre')
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,
@@ -52,14 +48,17 @@ class Title(models.Model):
     )
 
     class Meta:
-        # think about unique constraint ['genre','name']
-        # constraints = (
-        #     CheckConstraint(
-        #         check=(Q(year__lte=date.today().year)),
-        #         name='%(app_label)s_%(class)s_year__less__today'
-        #     )
-        # )
-        pass
+        constraints = (
+            CheckConstraint(
+                check=(Q(year__lte=date.today().year)),
+                name='%(app_label)s_%(class)s_year__less__today'
+            ),
+            #        UniqueConstraint(
+            #            fields=['genre', 'name'],
+            #            name='%(app_label)s_%(class)s_unique__following__unique'
+            #        )
+
+        )
 
     def __str__(self):
         return self.name[:15]
@@ -69,8 +68,7 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(
         max_length=50,
-        unique=True,
-        validators=[slug_regex_validator]
+        unique=True
     )
 
     def __str__(self):
