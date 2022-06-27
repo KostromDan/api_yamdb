@@ -13,8 +13,8 @@ from reviews.models import Category, Genre, Title
 
 from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, TitleSerializer, UserMeSerializer,
-                          UserSerializer
+                          RegistrationSerializer, TitleSerializer,
+                          UserMeSerializer, UserSerializer
                           )
 
 User = get_user_model()
