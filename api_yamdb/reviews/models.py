@@ -3,7 +3,8 @@ from datetime import date
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import (CharField, CheckConstraint, Q, TextField)
+from django.db.models import (
+    CharField, CheckConstraint, Q, TextField, UniqueConstraint)
 
 
 class User(AbstractUser):
@@ -21,7 +22,18 @@ class User(AbstractUser):
 
 
 class Genre(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, verbose_name='Название')
+    slug = models.SlugField(
+        max_length=50,
+        unique=True
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=256, verbose_name='Название')
     slug = models.SlugField(
         max_length=50,
         unique=True
@@ -32,18 +44,23 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    name = models.TextField()
-    year = models.IntegerField()
-    description = models.TextField(max_length=256)
+    name = models.TextField(verbose_name='Название')
+    year = models.IntegerField(verbose_name='Год выхода')
+    description = models.TextField(
+        max_length=256,
+        verbose_name='Описание',
+        blank=True, null=True)
     genre = models.ManyToManyField(
         'Genre',
-        related_name='assigned_genre')
+        related_name='assigned_genre',
+        verbose_name='Жанр',
+        through='TitleGenre')
     category = models.ForeignKey(
         'Category',
         on_delete=models.SET_NULL,
         blank=True, null=True,
         related_name='titles',
-        verbose_name='Категория произведения'
+        verbose_name='Категория'
     )
 
     class Meta:
@@ -52,26 +69,23 @@ class Title(models.Model):
                 check=(Q(year__lte=date.today().year)),
                 name='%(app_label)s_%(class)s_year__less__today'
             ),
-            #        UniqueConstraint(
-            #            fields=['genre', 'name'],
-            #            name='%(app_label)s_%(class)s_unique__following__unique'
-            #        )
-
         )
 
     def __str__(self):
         return self.name[:15]
 
 
-class Category(models.Model):
-    name = models.CharField(max_length=256)
-    slug = models.SlugField(
-        max_length=50,
-        unique=True
-    )
+class TitleGenre(models.Model):
+    title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
+    genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return self.name
+    class Meta:
+        constraints = (
+            UniqueConstraint(
+                fields=['title_id', 'genre_id'],
+                name='%(app_label)s_%(class)s_genre__title__unique'
+            ),
+        )
 
 
 class Review(models.Model):

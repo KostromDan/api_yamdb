@@ -2,12 +2,13 @@ from random import randint
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db.models import Sum
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import EmailField
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, TitleGenre
 
 User = get_user_model()
 
@@ -87,26 +88,40 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class TitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(source='slug', many=True)
-    category = CategorySerializer(source='slug')
+class DictTitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
     rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        depth = 1
-        fields = ('name', 'year', 'description', 'genre', 'category', 'rating')
-
-    def validate_category(self, value):
-        if value not in Category.objects.all():
-            raise ValidationError('Укажите существующую категорию')
-
-    def validate_genre(self, value):
-        if value not in Genre.objects.all():
-            raise ValidationError('Укажите существующий жанр')
+        fields = (
+            'id', 'name', 'year', 'description', 'genre', 'category', 'rating')
 
     def get_rating(self, obj):
-        return 5
+        queryset_review = obj.reviews.all()
+        if queryset_review.count() == 0:
+            return None
+        score_sum = queryset_review.aggregate(Sum('score'))['score__sum']
+        return score_sum//queryset_review.count()
+
+
+class SlugTitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Genre.objects.all(), many=True)
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all())
+
+    class Meta:
+        model = Title
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category', )
 
     def create(self, validated_data):
-        return super().create(validated_data)
+        genres = validated_data.pop('genre')
+        title = Title.objects.create(**validated_data)
+        for genre in genres:
+            TitleGenre.objects.create(
+                title_id=title,
+                genre_id=genre
+            )
+        return title

@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
@@ -11,10 +12,11 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title
 
+from .filters import TitleFilter
 from .permissions import IsAdmin, IsAdminOrReadOnly
 from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, TitleSerializer,
-                          UserMeSerializer, UserSerializer
+                          RegistrationSerializer, DictTitleSerializer,
+                          SlugTitleSerializer, UserMeSerializer, UserSerializer
                           )
 
 User = get_user_model()
@@ -61,9 +63,17 @@ class CategoryViewset(CreateListDeleteViewset):
 
 class TitleViewset(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+#    filterset_fields = ('category', 'genre', 'name', 'year')
+    filter_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_class(self):
+        dict_var = ['list', 'retrieve']
+        if self.action in dict_var:
+            return DictTitleSerializer
+        return SlugTitleSerializer
 
 
 @api_view(['PATCH', 'GET'])
