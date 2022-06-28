@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
+
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets
@@ -14,8 +15,8 @@ from reviews.models import Category, Genre, Title
 
 from .filters import TitleFilter
 from .permissions import IsAdmin, IsAdminOrReadOnly
-from .serializers import (CategorySerializer, GenreSerializer,
-                          RegistrationSerializer, DictTitleSerializer,
+from .serializers import (CategorySerializer, DictTitleSerializer,
+                          GenreSerializer, RegistrationSerializer,
                           SlugTitleSerializer, UserMeSerializer, UserSerializer
                           )
 
@@ -65,7 +66,7 @@ class TitleViewset(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
-#    filterset_fields = ('category', 'genre', 'name', 'year')
+    #    filterset_fields = ('category', 'genre', 'name', 'year')
     filter_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
 

@@ -1,7 +1,6 @@
-from django_filters import (FilterSet,
-                            NumberFilter,
-                            CharFilter,
-                            ModelMultipleChoiceFilter)
+from django_filters import (CharFilter, FilterSet, ModelMultipleChoiceFilter,
+                            NumberFilter
+                            )
 
 from reviews.models import Genre, Title
 
@@ -12,11 +11,11 @@ class TitleFilter(FilterSet):
         to_field_name='slug',
         queryset=Genre.objects.all()
     )
-#    category = ModelChoiceFilter(
-#        field_name='category__slug',
-#        to_field_name='slug',
-#        queryset=Category.objects.all()
-#    )
+    #    category = ModelChoiceFilter(
+    #        field_name='category__slug',
+    #        to_field_name='slug',
+    #        queryset=Category.objects.all()
+    #    )
     category = CharFilter(field_name='category__slug')
     year = NumberFilter(field_name='year')
     name = CharFilter(field_name='name', lookup_expr='contains')

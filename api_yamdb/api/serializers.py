@@ -75,14 +75,12 @@ class UserMeSerializer(UserSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Genre
         fields = ('name', 'slug')
 
 
 class CategorySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Category
         fields = ('name', 'slug')
@@ -103,7 +101,7 @@ class DictTitleSerializer(serializers.ModelSerializer):
         if queryset_review.count() == 0:
             return None
         score_sum = queryset_review.aggregate(Sum('score'))['score__sum']
-        return score_sum//queryset_review.count()
+        return score_sum // queryset_review.count()
 
 
 class SlugTitleSerializer(serializers.ModelSerializer):
@@ -114,7 +112,7 @@ class SlugTitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'genre', 'category', )
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category',)
 
     def create(self, validated_data):
         genres = validated_data.pop('genre')
