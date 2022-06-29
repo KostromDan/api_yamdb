@@ -3,12 +3,13 @@ from random import randint
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404
 
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import EmailField
 
-from reviews.models import Category, Genre, Title, TitleGenre
+from reviews.models import Category, Comment, Genre, Review, Title, TitleGenre
 
 User = get_user_model()
 
@@ -123,3 +124,59 @@ class SlugTitleSerializer(serializers.ModelSerializer):
                 genre_id=genre
             )
         return title
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
+    text = serializers.CharField(
+        allow_blank=True,
+        required=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Review
+        fields = '__all__'
+
+    def validate_score(self, value):
+        if value not in range(1, 11):
+            raise ValidationError(
+                'Оценку можно ставить только в диапазоне от 1 до 10.'
+            )
+        return value
+
+    def validate(self, data):
+        request = self.context['request']
+        title_id = self.context['view'].kwargs.get('title_id')
+        user = request.user
+        title = get_object_or_404(Title, pk=title_id)
+        review_exist = Review.objects.filter(title=title, author=user).exists()
+        if(
+            request.method == 'POST'
+            and review_exist
+        ):
+            raise ValidationError(
+                'На одно произведение можно оставить не более одного отзыва.'
+            )
+        return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        model = Comment
+        fields = '__all__'
