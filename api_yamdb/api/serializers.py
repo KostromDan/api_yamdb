@@ -1,4 +1,6 @@
-from random import randint
+from api_yamdb.settings import (CONFORMATION_CODE_MSG_TITLE, DEFAULT_ROLE,
+                                EMAIL_HOST_USER
+                                )
 
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -55,13 +57,12 @@ class RegistrationSerializer(UserSerializer):
                   )
 
     def create(self, validated_data):
-        confirmation_code = str(randint(100000000, 999999999))
         user = User.objects.create(**validated_data,
-                                   role='user',
-                                   confirmation_code=confirmation_code)
-        send_mail('Conformation code.', confirmation_code, 'mail@test.ru',
-                  [user.email])
-        print(confirmation_code)
+                                   role=DEFAULT_ROLE)
+
+        confirmation_code = str(user.confirmation_code)
+        send_mail(CONFORMATION_CODE_MSG_TITLE, confirmation_code,
+                  EMAIL_HOST_USER, [user.email])
         return user
 
 
@@ -157,9 +158,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         user = request.user
         title = get_object_or_404(Title, pk=title_id)
         review_exist = Review.objects.filter(title=title, author=user).exists()
-        if(
-            request.method == 'POST'
-            and review_exist
+        if (
+                request.method == 'POST'
+                and review_exist
         ):
             raise ValidationError(
                 'На одно произведение можно оставить не более одного отзыва.'

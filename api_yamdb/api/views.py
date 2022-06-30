@@ -80,72 +80,6 @@ class TitleViewset(viewsets.ModelViewSet):
         return SlugTitleSerializer
 
 
-@api_view(['PATCH', 'GET'])
-@permission_classes([IsAuthenticated])
-def user_me_view(request):
-    user = request.user
-    if request.method == 'GET':
-        serializer = UserMeSerializer(instance=user, )
-        return Response(data=serializer.data, status=status.HTTP_200_OK)
-    serializer = UserMeSerializer(data=request.data, instance=user)
-    if serializer.is_valid():
-        role = request.data.get('role')
-        if (role is not None
-                and 'user' == user.role != role):
-            json_error = {
-                'role': user.role
-            }
-            return Response(json_error, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.validated_data)
-    else:
-        print(serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny, ])
-def register(request):
-    serializer = RegistrationSerializer(data=request.data, )
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.validated_data)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def token(request):
-    username = request.data.get('username')
-    confirmation_code = request.data.get('confirmation_code')
-    json_err = {}
-    if username is None:
-        json_err['username'] = 'Имя пользователя не указано!'
-    if confirmation_code is None:
-        json_err[
-            'confirmation_code'] = 'Код подтверждения не указан!'
-    if len(json_err) != 0:
-        return Response(json_err, status=status.HTTP_400_BAD_REQUEST)
-    try:
-        user = User.objects.get(username=username)
-    except ObjectDoesNotExist:
-        json_err = {
-            'username': f'Пользователя <{username}> не существует!'
-        }
-        return Response(json_err, status=status.HTTP_404_NOT_FOUND)
-    if user.confirmation_code != confirmation_code:
-        json_err = {
-            'confirmation_code': 'Код подтверждения не верен!'
-        }
-        return Response(json_err, status=status.HTTP_400_BAD_REQUEST)
-    refresh = RefreshToken.for_user(user)
-    json_ans = {
-        'token': str(refresh.access_token),
-    }
-    return Response(json_ans, status=status.HTTP_200_OK)
-
-
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAdminModeratorAuthorOwnedOrReadOnly]
@@ -174,3 +108,66 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
+
+
+@api_view(['PATCH', 'GET'])
+@permission_classes([IsAuthenticated])
+def user_me_view(request):
+    user = request.user
+    if request.method == 'GET':
+        serializer = UserMeSerializer(instance=user, )
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    serializer = UserMeSerializer(data=request.data, instance=user)
+    if serializer.is_valid():
+        role = request.data.get('role')
+        if (role is not None
+                and 'user' == user.role != role):
+            json_error = {
+                'role': user.role
+            }
+            return Response(json_error, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return Response(serializer.validated_data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny, ])
+def register(request):
+    serializer = RegistrationSerializer(data=request.data, )
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.validated_data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def token(request):
+    username = request.data.get('username')
+    confirmation_code = request.data.get('confirmation_code')
+    json_err = {}
+    if username is None:
+        json_err['username'] = 'Имя пользователя не указано!'
+    if confirmation_code is None:
+        json_err[
+            'confirmation_code'] = 'Код подтверждения не указан!'
+    if len(json_err) != 0:
+        return Response(json_err, status=status.HTTP_400_BAD_REQUEST)
+    try:
+        user = User.objects.get(username=username)
+    except ObjectDoesNotExist:
+        json_err = {
+            'username': f'Пользователя <{username}> не существует!'
+        }
+        return Response(json_err, status=status.HTTP_404_NOT_FOUND)
+    if str(user.confirmation_code) != confirmation_code:
+        json_err = {
+            'confirmation_code': 'Код подтверждения не верен!'
+        }
+        return Response(json_err, status=status.HTTP_400_BAD_REQUEST)
+    refresh = RefreshToken.for_user(user)
+    json_ans = {
+        'token': str(refresh.access_token),
+    }
+    return Response(json_ans, status=status.HTTP_200_OK)

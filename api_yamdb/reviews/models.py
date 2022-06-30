@@ -1,4 +1,7 @@
+import uuid
 from datetime import date
+
+from api_yamdb.settings import DEFAULT_ROLE
 
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -9,16 +12,17 @@ from django.db.models import (
 
 class User(AbstractUser):
     role = CharField(
-        verbose_name='Роль',
+        'Роль',
         max_length=10,
         blank=False,
-        default='user'
+        default=DEFAULT_ROLE
     )
     bio = TextField(
-        verbose_name='Биография',
+        'Биография',
         blank=True,
     )
-    confirmation_code = TextField(blank=True)
+    confirmation_code = models.UUIDField('Код подтверждения',
+                                         default=uuid.uuid4)
 
 
 class Genre(models.Model):
