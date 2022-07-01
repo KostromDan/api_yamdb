@@ -40,6 +40,13 @@ pip install -r requirements.txt
 python3 .\api_yamdb\manage.py  migrate
 ```
 
+Задать секретные переменные окружения:
+
+```
+Переименовать 'api_yamdb/api_yamdb/.env.example' в '.env' и
+заменить многоточия на секретные ключи.
+```
+
 Запустить проект:
 
 ```
