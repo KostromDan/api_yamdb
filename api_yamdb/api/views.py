@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
@@ -15,6 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Genre, Review, Title
 
 from .filters import TitleFilter
+from .mixins import CreateListDeleteViewset
 from .permissions import (IsAdmin, IsAdminModeratorAuthorOwnedOrReadOnly,
                           IsAdminOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -36,41 +37,21 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
 
 
-class CreateListDeleteViewset(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    pass
-
-
 class GenreViewset(CreateListDeleteViewset):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    pagination_class = LimitOffsetPagination
-    filter_backends = (filters.SearchFilter,)
-    permission_classes = [IsAdminOrReadOnly]
-    lookup_field = 'slug'
-    search_fields = ('name',)
 
 
 class CategoryViewset(CreateListDeleteViewset):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    pagination_class = LimitOffsetPagination
-    filter_backends = (filters.SearchFilter,)
-    permission_classes = [IsAdminOrReadOnly]
-    lookup_field = 'slug'
-    search_fields = ('name',)
 
 
 class TitleViewset(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
-    #    filterset_fields = ('category', 'genre', 'name', 'year')
-    filter_class = TitleFilter
+    filterset_class = TitleFilter
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
