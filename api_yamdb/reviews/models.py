@@ -68,9 +68,9 @@ class Title(models.Model):
                 check=(Q(year__lte=date.today().year)),
                 name='%(app_label)s_%(class)s_year__less__today'
             ),
-        ),
+        )
         indexes = [
-            models.Index(fields=('year'))
+            models.Index(fields=('year',))
         ]
 
     def __str__(self):

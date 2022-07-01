@@ -13,7 +13,7 @@ class TitleFilter(FilterSet):
     )
     category = CharFilter(field_name='category__slug')
     year = NumberFilter(field_name='year')
-    name = CharFilter(field_name='name', lookup_expr='contains')
+    name = CharFilter(field_name='name', lookup_expr='icontains')
 
     class Meta:
         model = Title
