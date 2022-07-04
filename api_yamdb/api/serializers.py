@@ -40,13 +40,13 @@ class UserSerializer(serializers.ModelSerializer):
                 f'Нельзя создать пользователя с именем <{value}>!')
         if User.objects.filter(username=value).exists():
             raise ValidationError(
-                'Пользователь с данным логином уже существует!')
+                f'Пользователь с логином {value} уже существует!')
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
             raise ValidationError(
-                'Пользователь с данной почтой уже существует!')
+                f'Пользователь с почтой {value} уже существует!')
         return value
 
 
